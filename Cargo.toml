@@ -1,0 +1,16 @@
+[package]
+name = "tinkoff-invest-openapi-rust"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+prost = "0.11.0"
+prost-types = "0.11"
+tokio = { version = "1.20.1", features = ["rt-multi-thread"] }
+tonic = { version = "0.8.0", features = ["tls", "tls-webpki-roots"] }
+
+[build-dependencies]
+protoc-bin-vendored = "3.0.0"
+tonic-build = "0.8"
