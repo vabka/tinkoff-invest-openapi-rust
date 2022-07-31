@@ -1,7 +1,7 @@
 use std::path::Path;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let api_path = Path::new("./src/contracts");
+    let api_path = Path::new("./src/api");
 
     if !api_path.exists() {
         std::fs::create_dir(api_path)?;
@@ -29,10 +29,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         api_path.join("tinkoff_public_invest_api_contract_v1.rs"),
     )?;
 
-    std::fs::write(
-        api_path.join("mod.rs"),
-        "pub mod tinkoff_public_invest_api_contract_v1;",
-    )?;
     std::fs::remove_file(api_path.join("google.protobuf.rs"))?;
     Ok(())
 }

@@ -1,2 +1,2 @@
-mod contracts;
+mod api;
 
