@@ -11,7 +11,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .build_client(true)
         .build_server(false)
         .out_dir(api_path)
-        .compile_well_known_types(true)
         .compile(
             &[
                 "./investAPI/src/docs/contracts/common.proto",
@@ -25,10 +24,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             ],
             &[
                 "./investAPI/src/docs/contracts/",
-                // "./protoc/include/google/protobuf/",
             ],
         )?;
 
-    // std::fs::remove_file(api_path.join("google.protobuf.rs"))?;
     Ok(())
 }

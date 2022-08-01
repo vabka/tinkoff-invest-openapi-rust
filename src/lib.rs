@@ -2,8 +2,24 @@ use std::error::Error;
 
 use rust_decimal::Decimal;
 use rust_decimal_macros::dec;
-use tinkoff::invest::v1::{Quotation, MoneyValue, users_service_client::UsersServiceClient};
-use tonic::{metadata::{MetadataValue, Ascii}, service::Interceptor, transport::{Channel, Endpoint}, codegen::InterceptedService};
+use tinkoff::invest::v1::{
+    instruments_service_client::InstrumentsServiceClient,
+    market_data_service_client::MarketDataServiceClient,
+    market_data_stream_service_client::MarketDataStreamServiceClient,
+    operations_service_client::OperationsServiceClient,
+    operations_stream_service_client::OperationsStreamServiceClient,
+    orders_service_client::OrdersServiceClient,
+    orders_stream_service_client::OrdersStreamServiceClient,
+    sandbox_service_client::SandboxServiceClient,
+    stop_orders_service_client::StopOrdersServiceClient, users_service_client::UsersServiceClient,
+    MoneyValue, Quotation,
+};
+use tonic::{
+    codegen::InterceptedService,
+    metadata::{Ascii, MetadataValue},
+    service::Interceptor,
+    transport::{Channel, Endpoint},
+};
 
 #[path = "generated"]
 pub mod tinkoff {
@@ -13,7 +29,6 @@ pub mod tinkoff {
         pub mod v1;
     }
 }
-
 
 impl Into<Decimal> for MoneyValue {
     fn into(self) -> Decimal {
@@ -61,20 +76,62 @@ pub struct TinkoffInvestClient {
     interceptor: TinkoffSpecificHeadersInterceptor,
 }
 
+type Inner = InterceptedService<Channel, TinkoffSpecificHeadersInterceptor>;
 impl TinkoffInvestClient {
     pub async fn connect(token: &str) -> Result<Self, Box<dyn std::error::Error>> {
         let uri = "https://invest-public-api.tinkoff.ru:443";
         let interceptor = TinkoffSpecificHeadersInterceptor::new(token)?;
-        let channel = Endpoint::new(uri)?.connect().await?;
+        let channel = Endpoint::from_static(uri).connect().await?;
         Ok(Self {
             channel,
             interceptor,
         })
     }
 
-    pub fn get_users_service_client(
-        &self,
-    ) -> UsersServiceClient<InterceptedService<Channel, TinkoffSpecificHeadersInterceptor>> {
+    pub fn users(&self) -> UsersServiceClient<Inner> {
         UsersServiceClient::with_interceptor(self.channel.clone(), self.interceptor.clone())
     }
+
+    pub fn instruments(&self) -> InstrumentsServiceClient<Inner> {
+        InstrumentsServiceClient::with_interceptor(self.channel.clone(), self.interceptor.clone())
+    }
+
+    pub fn market_data(&self) -> MarketDataServiceClient<Inner> {
+        MarketDataServiceClient::with_interceptor(self.channel.clone(), self.interceptor.clone())
+    }
+
+    pub fn market_data_stream(&self) -> MarketDataStreamServiceClient<Inner> {
+        MarketDataStreamServiceClient::with_interceptor(
+            self.channel.clone(),
+            self.interceptor.clone(),
+        )
+    }
+
+    pub fn operations(&self) -> OperationsServiceClient<Inner> {
+        OperationsServiceClient::with_interceptor(self.channel.clone(), self.interceptor.clone())
+    }
+    pub fn operations_stream(&self) -> OperationsStreamServiceClient<Inner> {
+        OperationsStreamServiceClient::with_interceptor(
+            self.channel.clone(),
+            self.interceptor.clone(),
+        )
+    }
+
+    pub fn orders(&self) -> OrdersServiceClient<Inner> {
+        OrdersServiceClient::with_interceptor(self.channel.clone(), self.interceptor.clone())
+    }
+
+    pub fn orders_stream(&self) -> OrdersStreamServiceClient<Inner> {
+        OrdersStreamServiceClient::with_interceptor(self.channel.clone(), self.interceptor.clone())
+    }
+
+    pub fn sandbox(&self) -> SandboxServiceClient<Inner> {
+        SandboxServiceClient::with_interceptor(self.channel.clone(), self.interceptor.clone())
+    }
+
+    pub fn stop_orders(&self) -> StopOrdersServiceClient<Inner> {
+        StopOrdersServiceClient::with_interceptor(self.channel.clone(), self.interceptor.clone())
+    }
 }
+
+enum ConnectionError {}
