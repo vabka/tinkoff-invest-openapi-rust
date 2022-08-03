@@ -6,7 +6,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if !api_path.exists() {
         std::fs::create_dir(api_path)?;
     }
-
+    // TODO найти способ, как не запускать генерацию во время сборки в CI
     tonic_build::configure()
         .build_client(true)
         .build_server(false)
