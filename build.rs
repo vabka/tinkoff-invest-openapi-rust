@@ -1,7 +1,7 @@
 use std::path::Path;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let api_path = Path::new("./src/generated");
+    let api_path = Path::new("./src/grpc");
 
     if !api_path.exists() {
         std::fs::create_dir(api_path)?;

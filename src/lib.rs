@@ -21,7 +21,7 @@ use tonic::{
     transport::{Channel, Endpoint},
 };
 
-#[path = "generated"]
+#[path = "grpc"]
 pub mod tinkoff {
     #[path = ""]
     pub mod invest {
