@@ -1,5 +1,5 @@
 [package]
-name = "tinkoff-invest-openapi-rust"
+name = "tinkoff-invest-grpc"
 version = "0.1.0"
 edition = "2021"
 
@@ -15,4 +15,7 @@ tonic = { version = "0.8.0", features = ["tls", "tls-webpki-roots"] }
 
 [build-dependencies]
 protoc-bin-vendored = "3.0.0"
+regex = "1.6.0"
+serde = { version = "1.0.142", features = ["derive"] }
+serde_json = "1.0.83"
 tonic-build = "0.8"

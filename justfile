@@ -21,13 +21,13 @@ protos:
 update-protos:
     git pull --recurse-submodules
 
-test:
-    cargo test
+# test:
+#    cargo test
 
-build:
-    PROTOC="./protoc/bin/{{protoc_exe}}" cargo build
+# build:
+#    PROTOC="./protoc/bin/{{protoc_exe}}" cargo build
 
-install-protoc:
-    mkdir ./protoc/ && curl -L -o ./protoc/protoc.zip {{protoc_uri}} && unzip ./protoc/protoc.zip -d ./protoc/
+# install-protoc:
+#    mkdir ./protoc/ && curl -L -o ./protoc/protoc.zip {{protoc_uri}} && unzip ./protoc/protoc.zip -d ./protoc/
 
-prepare: protos install-protoc build
+# prepare: protos install-protoc build

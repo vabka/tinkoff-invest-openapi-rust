@@ -1,8 +1,6 @@
-use std::error::Error;
-
-use rust_decimal::Decimal;
-use rust_decimal_macros::dec;
-use tinkoff::invest::v1::{
+mod generated;
+pub use generated::tinkoff_invest_v1 as api;
+use generated::tinkoff_invest_v1::{
     instruments_service_client::InstrumentsServiceClient,
     market_data_service_client::MarketDataServiceClient,
     market_data_stream_service_client::MarketDataStreamServiceClient,
@@ -14,21 +12,16 @@ use tinkoff::invest::v1::{
     stop_orders_service_client::StopOrdersServiceClient, users_service_client::UsersServiceClient,
     MoneyValue, Quotation,
 };
+use rust_decimal::Decimal;
+use rust_decimal_macros::dec;
+use std::error::Error;
+
 use tonic::{
     codegen::InterceptedService,
     metadata::{Ascii, MetadataValue},
     service::Interceptor,
-    transport::{Channel, Endpoint},
+    transport::{Channel, Endpoint}, Status,
 };
-
-#[path = "grpc"]
-pub mod tinkoff {
-    #[path = ""]
-    pub mod invest {
-        #[path = "tinkoff.public.invest.api.contract.v1.rs"]
-        pub mod v1;
-    }
-}
 
 impl Into<Decimal> for MoneyValue {
     fn into(self) -> Decimal {
@@ -134,4 +127,15 @@ impl TinkoffInvestClient {
     }
 }
 
-enum ConnectionError {}
+struct CustomError {}
+enum CustomErrorFromStatus {
+    NotAnError
+}
+impl TryFrom<Status> for CustomError {
+    type Error = CustomErrorFromStatus;
+
+    fn try_from(value: tonic::Status) -> Result<Self, Self::Error> {
+        let code = value.code();
+        Err(Self::Error::NotAnError)        
+    }
+}
