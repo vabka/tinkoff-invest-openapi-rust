@@ -50,7 +50,7 @@ mod decimal_tests {
             nano: 0
         };
         
-        assert_eq!(dec!(0), value.into::<Decimal>());
+        assert_eq!(dec!(0), Decimal::from(value));
     }
 }
 
