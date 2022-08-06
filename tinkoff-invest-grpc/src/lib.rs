@@ -1,5 +1,6 @@
 mod generated;
 pub use generated::tinkoff_invest_v1 as api;
+pub use generated::errors as errors;
 use generated::tinkoff_invest_v1::{
     instruments_service_client::InstrumentsServiceClient,
     market_data_service_client::MarketDataServiceClient,
@@ -12,6 +13,13 @@ use generated::tinkoff_invest_v1::{
     stop_orders_service_client::StopOrdersServiceClient, users_service_client::UsersServiceClient,
     MoneyValue, Quotation,
 };
+
+
+pub mod decimal {
+    pub use rust_decimal_macros::dec;
+    pub use rust_decimal::prelude;
+}
+pub use tonic;
 use rust_decimal::Decimal;
 use rust_decimal_macros::dec;
 use std::error::Error;
@@ -20,12 +28,29 @@ use tonic::{
     codegen::InterceptedService,
     metadata::{Ascii, MetadataValue},
     service::Interceptor,
-    transport::{Channel, Endpoint}, Status,
+    transport::{Channel, Endpoint},
 };
 
 impl Into<Decimal> for MoneyValue {
     fn into(self) -> Decimal {
         Decimal::from(self.units) + Decimal::from(self.nano) / dec!(1_000_000)
+    }
+}
+
+#[cfg(test)]
+mod decimal_tests {
+    use rust_decimal::Decimal;
+    use rust_decimal_macros::dec;
+
+    #[test]
+    fn convert_zero() {
+        let value = super::api::MoneyValue {
+            currency: "USD".into(),
+            units: 0i64,
+            nano: 0
+        };
+        
+        assert_eq!(dec!(0), value.into::<Decimal>());
     }
 }
 
@@ -69,7 +94,7 @@ pub struct TinkoffInvestClient {
     interceptor: TinkoffSpecificHeadersInterceptor,
 }
 
-type Inner = InterceptedService<Channel, TinkoffSpecificHeadersInterceptor>;
+pub type Inner = InterceptedService<Channel, TinkoffSpecificHeadersInterceptor>;
 impl TinkoffInvestClient {
     pub async fn connect(token: &str) -> Result<Self, Box<dyn std::error::Error>> {
         let uri = "https://invest-public-api.tinkoff.ru:443";
@@ -124,18 +149,5 @@ impl TinkoffInvestClient {
 
     pub fn stop_orders(&self) -> StopOrdersServiceClient<Inner> {
         StopOrdersServiceClient::with_interceptor(self.channel.clone(), self.interceptor.clone())
-    }
-}
-
-struct CustomError {}
-enum CustomErrorFromStatus {
-    NotAnError
-}
-impl TryFrom<Status> for CustomError {
-    type Error = CustomErrorFromStatus;
-
-    fn try_from(value: tonic::Status) -> Result<Self, Self::Error> {
-        let code = value.code();
-        Err(Self::Error::NotAnError)        
     }
 }
