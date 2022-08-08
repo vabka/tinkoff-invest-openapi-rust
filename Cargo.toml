@@ -1,0 +1,3 @@
+[workspace]
+
+members = ["tinkoff-invest-grpc", "tinkoff-invest-sdk"]
