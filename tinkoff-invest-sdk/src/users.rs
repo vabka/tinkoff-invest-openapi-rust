@@ -1,6 +1,6 @@
-use crate::{method, service};
-use tinkoff_invest_grpc::api::{users_service_client::UsersServiceClient, GetUserTariffRequest};
-use tinkoff_invest_grpc::api::{GetAccountsRequest, GetInfoRequest};
+use crate::{service, types};
+use tinkoff_invest_grpc::api::users_service_client::UsersServiceClient;
+
 pub use tinkoff_invest_grpc::api::{
     GetAccountsResponse, GetInfoResponse, GetMarginAttributesRequest, GetMarginAttributesResponse,
     GetUserTariffResponse,
@@ -8,7 +8,6 @@ pub use tinkoff_invest_grpc::api::{
 use tinkoff_invest_grpc::*;
 
 service!(UsersClient, UsersServiceClient<Inner>, {
-    // method!(get_accounts, GetAccountsRequest, GetAccountsResponse);
     // method!(get_user_tariff, GetUserTariffRequest, GetUserTariffResponse);
     // method!(get_info, GetInfoRequest, GetInfoResponse);
     // method!(
@@ -18,3 +17,17 @@ service!(UsersClient, UsersServiceClient<Inner>, {
     //     thin
     // );
 });
+
+impl UsersClient {
+    /// Получить все счета пользователя
+    async fn get_accounts(&mut self) -> crate::Result<Vec<types::Account>> {
+        let request = api::GetAccountsRequest {};
+        let response = self.internal.get_accounts(request).await?;
+        let data = response.into_inner();
+        Ok(data
+            .accounts
+            .into_iter()
+            .map(types::Account::from)
+            .collect())
+    }
+}

@@ -933,6 +933,7 @@ name = "tinkoff-invest-sdk"
 version = "0.1.0"
 dependencies = [
  "chrono",
+ "prost-types",
  "regex",
  "serde",
  "serde_json",

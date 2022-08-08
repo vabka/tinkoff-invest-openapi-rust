@@ -31,7 +31,7 @@ use tonic::{
 
 impl Into<Decimal> for MoneyValue {
     fn into(self) -> Decimal {
-        Decimal::from(self.units) + Decimal::from(self.nano) / dec!(1_000_000)
+        Decimal::from(self.units) + Decimal::from(self.nano) / dec!(1_000_000_000)
     }
 }
 
@@ -56,7 +56,7 @@ mod decimal_tests {
         let value = super::api::MoneyValue {
             currency: "USD".into(),
             units: -5i64,
-            nano: -990000,
+            nano: -990000000,
         };
         let result: Decimal = value.into();
         assert_eq!(dec!(-5.99), result);
@@ -66,7 +66,7 @@ mod decimal_tests {
         let value = super::api::MoneyValue {
             currency: "USD".into(),
             units: 5i64,
-            nano: 990000,
+            nano: 990000000,
         };
         let result: Decimal = value.into();
         assert_eq!(dec!(5.99), result);

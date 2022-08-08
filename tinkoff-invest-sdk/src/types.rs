@@ -1,4 +1,6 @@
-use chrono::{Date, Utc};
+use std::time::{SystemTime, UNIX_EPOCH};
+
+use chrono::{Date, DateTime, TimeZone, Utc};
 use tinkoff_invest_grpc::{api, decimal::rust_decimal::Decimal};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -136,4 +138,100 @@ impl From<api::Bond> for Bond {
     fn from(bond: api::Bond) -> Self {
         todo!()
     }
+}
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+pub enum AccountType {
+    Unspecified,
+    Tinkoff,
+    TinkoffIis,
+    InvestBox,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[repr(i32)]
+pub enum AccessLevel {
+    /// Уровень доступа не определён.
+    Unspecified = 0,
+    /// Полный доступ к счёту.
+    FullAccess = 1,
+    /// Доступ с уровнем прав "только чтение".
+    ReadOnly = 2,
+    /// Доступ отсутствует.
+    NoAccess = 3,
+}
+
+#[derive(Debug, Clone)]
+pub struct Account {
+    id: String,
+    account_type: AccountType,
+    name: String,
+    status: AccountStatus,
+    opened_date: Option<Date<Utc>>,
+    closed_date: Option<Date<Utc>>,
+    access_level: AccessLevel,
+}
+
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+pub enum AccountStatus {
+    Unspecified,
+    New,
+    Open,
+    Closed,
+}
+impl From<api::Account> for Account {
+    fn from(account: api::Account) -> Self {
+        Self {
+            id: account.id,
+            account_type: match account.r#type {
+                1 => AccountType::Tinkoff,
+                2 => AccountType::TinkoffIis,
+                3 => AccountType::InvestBox,
+                _ => AccountType::Unspecified,
+            },
+            name: account.name,
+            status: match account.status {
+                1 => AccountStatus::New,
+                2 => AccountStatus::Open,
+                3 => AccountStatus::Closed,
+                _ => AccountStatus::Unspecified,
+            },
+            opened_date: account
+                .opened_date
+                .map(SystemTime::try_from)
+                .map(Result::unwrap)
+                .map(system_time_to_date_time)
+                .map(|dt| dt.date()),
+            closed_date: account
+                .closed_date
+                .map(SystemTime::try_from)
+                .map(Result::unwrap)
+                .map(system_time_to_date_time)
+                .map(|dt| dt.date()),
+
+            access_level: match account.access_level {
+                1 => AccessLevel::FullAccess,
+                2 => AccessLevel::ReadOnly,
+                3 => AccessLevel::NoAccess,
+                _ => AccessLevel::Unspecified,
+            },
+        }
+    }
+}
+
+fn system_time_to_date_time(t: SystemTime) -> DateTime<Utc> {
+    let (sec, nsec) = match t.duration_since(UNIX_EPOCH) {
+        Ok(dur) => (dur.as_secs() as i64, dur.subsec_nanos()),
+        Err(e) => {
+            // unlikely but should be handled
+            let dur = e.duration();
+            let (sec, nsec) = (dur.as_secs() as i64, dur.subsec_nanos());
+            if nsec == 0 {
+                (-sec, 0)
+            } else {
+                (-sec - 1, 1_000_000_000 - nsec)
+            }
+        }
+    };
+    Utc.timestamp(sec, nsec)
 }
