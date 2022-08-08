@@ -1,9 +1,13 @@
 mod users;
 mod instruments;
+mod generated;
+mod types;
+
+pub use generated::errors as error;
+pub use users::*;
 
 use instruments::InstrumentsClient;
-pub use tinkoff_invest_grpc::errors::{ErrorType, TinkoffInvestError};
-pub use users::*;
+use error::TinkoffInvestError;
 
 pub struct TinkoffInvestClient {
     internal: tinkoff_invest_grpc::TinkoffInvestClient,
@@ -36,7 +40,7 @@ macro_rules! method {
         pub async fn $method(&mut self) -> $crate::Result<$ret> {
             let req = $req {};
             let res = self.internal.$method(req).await;
-            let data = res?.into_inner();
+            let data = res?.into_inner().into();
 
             $crate::Result::Ok(data)
         }
@@ -45,7 +49,7 @@ macro_rules! method {
         #[inline]
         pub async fn $method(&mut self, request: $req) -> $crate::Result<$ret> {
             let res = self.internal.$method(request).await;
-            let data = res?.into_inner();
+            let data = res?.into_inner().into();
 
             $crate::Result::Ok(data)
         }
@@ -54,7 +58,7 @@ macro_rules! method {
         #[inline]
         pub async fn $method(&mut self, request: $req) -> $crate::Result<$ret> {
             let res = self.internal.$method(request.into()).await;
-            let data = res?.into_inner();
+            let data = res?.into_inner().into();
 
             $crate::Result::Ok(data)
         }
@@ -81,13 +85,4 @@ impl TinkoffInvestClient {
     // orders_stream
     // sandbox
     // stop_orders
-}
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        let result = 2 + 2;
-        assert_eq!(result, 4);
-    }
 }

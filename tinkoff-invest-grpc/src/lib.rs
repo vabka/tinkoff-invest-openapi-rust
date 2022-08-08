@@ -1,6 +1,5 @@
 mod generated;
 pub use generated::tinkoff_invest_v1 as api;
-pub use generated::errors as errors;
 use generated::tinkoff_invest_v1::{
     instruments_service_client::InstrumentsServiceClient,
     market_data_service_client::MarketDataServiceClient,
@@ -14,15 +13,14 @@ use generated::tinkoff_invest_v1::{
     MoneyValue, Quotation,
 };
 
-
 pub mod decimal {
+    pub use rust_decimal;
     pub use rust_decimal_macros::dec;
-    pub use rust_decimal::prelude;
 }
-pub use tonic;
 use rust_decimal::Decimal;
 use rust_decimal_macros::dec;
 use std::error::Error;
+pub use tonic;
 
 use tonic::{
     codegen::InterceptedService,
@@ -47,10 +45,31 @@ mod decimal_tests {
         let value = super::api::MoneyValue {
             currency: "USD".into(),
             units: 0i64,
-            nano: 0
+            nano: 0,
         };
-        
-        assert_eq!(dec!(0), Decimal::from(value));
+        let decimal: Decimal = value.into();
+        assert_eq!(dec!(0), decimal);
+    }
+
+    #[test]
+    fn convert_negative() {
+        let value = super::api::MoneyValue {
+            currency: "USD".into(),
+            units: -5i64,
+            nano: -990000,
+        };
+        let result: Decimal = value.into();
+        assert_eq!(dec!(-5.99), result);
+    }
+    #[test]
+    fn convert_positive() {
+        let value = super::api::MoneyValue {
+            currency: "USD".into(),
+            units: 5i64,
+            nano: 990000,
+        };
+        let result: Decimal = value.into();
+        assert_eq!(dec!(5.99), result);
     }
 }
 

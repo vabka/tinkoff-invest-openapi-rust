@@ -1,13 +1,8 @@
-use tinkoff_invest_grpc::api::instruments_service_client::InstrumentsServiceClient;
 use tinkoff_invest_grpc::api::{self, InstrumentIdType};
-pub use tinkoff_invest_grpc::api::{
-    BondResponse, BondsResponse, TradingSchedulesRequest, TradingSchedulesResponse,
-};
-use tinkoff_invest_grpc::tonic;
-use tinkoff_invest_grpc::tonic::IntoRequest;
 use tinkoff_invest_grpc::Inner;
+use tinkoff_invest_grpc::api::instruments_service_client::InstrumentsServiceClient;
 
-use crate::{method, service};
+use crate::{service, types::Bond};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum InstrumentRequest {
@@ -16,11 +11,9 @@ pub enum InstrumentRequest {
     Uid(String),
 }
 
-pub struct InstrumentsRequest {}
-
-impl IntoRequest<api::InstrumentRequest> for InstrumentRequest {
-    fn into_request(self) -> tonic::Request<api::InstrumentRequest> {
-        let req = match self {
+impl Into<api::InstrumentRequest> for InstrumentRequest {
+    fn into(self) -> api::InstrumentRequest {
+        match self {
             InstrumentRequest::Figi(figi) => api::InstrumentRequest {
                 class_code: "".to_string(),
                 id_type: InstrumentIdType::Figi as i32,
@@ -36,11 +29,17 @@ impl IntoRequest<api::InstrumentRequest> for InstrumentRequest {
                 class_code: "".to_string(),
                 id: uid,
             },
-        };
-        req.into_request()
+        }
     }
 }
 
-service!(InstrumentsClient, InstrumentsServiceClient<Inner>, {
-    method!(bond_by, InstrumentRequest, BondResponse, thin);
-});
+service!(InstrumentsClient, InstrumentsServiceClient<Inner>);
+impl InstrumentsClient {
+    pub async fn bond_by(&mut self, request: InstrumentRequest) -> crate::Result<Option<Bond>> {
+        let req: api::InstrumentRequest = request.into();
+        let response = self.internal.bond_by(req).await?;
+        let inner = response.into_inner();
+        let bond = inner.instrument;
+        Ok(bond.map(Into::into))
+    }
+}
