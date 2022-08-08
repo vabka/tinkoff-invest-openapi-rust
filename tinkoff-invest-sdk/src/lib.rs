@@ -1,13 +1,13 @@
-mod users;
-mod instruments;
 mod generated;
-mod types;
+pub mod instruments;
+pub mod types;
+pub mod users;
 
+use users::*;
 pub use generated::errors as error;
-pub use users::*;
 
-use instruments::InstrumentsClient;
 use error::TinkoffInvestError;
+use instruments::InstrumentsClient;
 
 pub struct TinkoffInvestClient {
     internal: tinkoff_invest_grpc::TinkoffInvestClient,
@@ -75,6 +75,10 @@ macro_rules! service_getter {
 }
 
 impl TinkoffInvestClient {
+    pub async fn connect(token: &str) -> core::result::Result<Self, Box<dyn std::error::Error>> {
+        let internal = tinkoff_invest_grpc::TinkoffInvestClient::connect(token).await?;
+        Ok(Self { internal })
+    }
     service_getter!(users, UsersClient);
     service_getter!(instruments, InstrumentsClient);
     // market_data

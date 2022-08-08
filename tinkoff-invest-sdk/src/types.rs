@@ -1,9 +1,9 @@
 use chrono::{Date, Utc};
 use tinkoff_invest_grpc::{api, decimal::rust_decimal::Decimal};
 
-
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Currency(pub String);
+#[derive(Debug, Clone, Copy)]
 pub struct Short {
     /// Коэффициент ставки риска короткой позиции по инструменту.
     kshort: Decimal,
@@ -13,6 +13,7 @@ pub struct Short {
     dshort_min: Decimal,
 }
 
+#[derive(Debug, Clone, Copy)]
 pub struct Long {
     /// Коэффициент ставки риска длинной позиции по инструменту.
     klong: Decimal,
@@ -22,10 +23,12 @@ pub struct Long {
     dlong_min: Decimal,
 }
 
+#[derive(Debug, Clone)]
 pub struct MoneyValue {
     currency: Currency,
     amount: Decimal,
 }
+#[derive(Debug, Clone)]
 pub struct CountryOfRisk {
     code: String,
     name: String,
@@ -68,17 +71,21 @@ pub enum SecurityTradingStatus {
     /// Недоступна торговля в режиме внутренней ликвидности брокера
     DealerNotAvailableForTrading = 16,
 }
+
+#[derive(Debug, Clone, Copy)]
 pub enum BondIssueKind {
-    Unknown(String),
+    Unknown,
     Documentary,
     NonDocumentary,
 }
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum RealExchange {
     Unspecified = 0,
     Moex = 1,
     Rts = 2,
     Otc = 3,
 }
+#[derive(Debug, Clone)]
 pub struct Bond {
     /// Figi-идентификатор инструмента.
     figi: String,
