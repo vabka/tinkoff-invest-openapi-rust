@@ -1,10 +1,12 @@
 {
     "cSpell.words": [
         "canonicalize",
+        "chrono",
         "codegen",
         "Figi",
         "isin",
         "marketdata",
+        "Moex",
         "proto",
         "stoporders",
         "tinkoff"
