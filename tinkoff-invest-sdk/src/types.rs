@@ -3,11 +3,8 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
-use chrono::{Date, DateTime, TimeZone, Utc};
+use chrono::{Date, Utc, DateTime, TimeZone};
 use tinkoff_invest_grpc::{api, decimal::rust_decimal::Decimal};
-
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Currency(String);
 
 #[derive(Debug, Clone, Copy)]
 pub struct Short {
@@ -31,8 +28,8 @@ pub struct Long {
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct MoneyValue {
-    currency: Currency,
-    amount: Decimal,
+    pub currency: String,
+    pub amount: Decimal,
 }
 
 impl From<api::MoneyValue> for MoneyValue {
@@ -44,7 +41,7 @@ impl From<api::MoneyValue> for MoneyValue {
         } = value;
         let quotation = api::Quotation { units, nano };
         Self {
-            currency: Currency(currency),
+            currency: currency,
             amount: quotation.into(),
         }
     }
@@ -182,8 +179,8 @@ impl Bond {
     }
 
     #[inline]
-    pub fn currency(&self) -> Currency {
-        Currency(self.0.currency.to_string())
+    pub fn currency(&self) -> &str {
+        &self.0.currency
     }
 
     #[inline]
