@@ -188,12 +188,16 @@ impl Bond {
 
     #[inline]
     pub fn short(&self) -> Option<Short> {
-        // TODO extra allocation
-        Some(Short {
-            kshort: self.0.kshort.clone().map(Into::into)?,
-            dshort: self.0.dshort.clone().map(Into::into)?,
-            dshort_min: self.0.dshort_min.clone().map(Into::into)?,
-        })
+        if self.0.short_enabled_flag {
+            // TODO extra allocation
+            Some(Short {
+                kshort: self.0.kshort.clone().map(Into::into)?,
+                dshort: self.0.dshort.clone().map(Into::into)?,
+                dshort_min: self.0.dshort_min.clone().map(Into::into)?,
+            })
+        } else {
+            None
+        }
     }
 
     #[inline]
@@ -217,12 +221,13 @@ impl Bond {
     }
 
     #[inline]
-    pub fn maturity_date(&self) -> Option<DateTime<Utc>> {
+    pub fn maturity_date(&self) -> Option<Date<Utc>> {
         // TODO extra allocation
         self.0
             .maturity_date
             .clone()
             .and_then(grpc_timestamp_to_chrono_timestamp)
+            .map(|d| d.date())
     }
 
     #[inline]
@@ -232,21 +237,23 @@ impl Bond {
     }
 
     #[inline]
-    pub fn state_reg_date(&self) -> Option<DateTime<Utc>> {
+    pub fn state_reg_date(&self) -> Option<Date<Utc>> {
         // TODO extra allocation
         self.0
             .state_reg_date
             .clone()
             .and_then(grpc_timestamp_to_chrono_timestamp)
+            .map(|d| d.date())
     }
 
     #[inline]
-    pub fn placement_date(&self) -> Option<DateTime<Utc>> {
+    pub fn placement_date(&self) -> Option<Date<Utc>> {
         // TODO extra allocation
         self.0
             .placement_date
             .clone()
             .and_then(grpc_timestamp_to_chrono_timestamp)
+            .map(|d| d.date())
     }
 
     #[inline]

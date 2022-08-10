@@ -107,10 +107,10 @@ fn emit_tinkoff_invest_error(writer: &mut io::BufWriter<fs::File>) -> Result<(),
         writer,
         r#"#[derive(Debug)]
 pub struct TinkoffInvestError {{
-    formatted_message: String,
-    error_type: ErrorType,
-    description: String,
-    code: String
+    pub formatted_message: String,
+    pub error_type: ErrorType,
+    pub description: String,
+    pub code: String
 }}
 
 impl std::error::Error for TinkoffInvestError {{}}
