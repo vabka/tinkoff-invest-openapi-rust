@@ -30,16 +30,8 @@ pub struct MoneyValue {
 
 impl From<api::MoneyValue> for MoneyValue {
     fn from(value: api::MoneyValue) -> Self {
-        let api::MoneyValue {
-            currency,
-            units,
-            nano,
-        } = value;
-        let quotation = api::Quotation { units, nano };
-        Self {
-            currency: currency,
-            amount: quotation.into(),
-        }
+        let (currency, amount) = value.into();
+        Self { currency, amount }
     }
 }
 #[derive(Debug, Clone)]

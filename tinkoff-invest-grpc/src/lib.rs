@@ -29,9 +29,18 @@ use tonic::{
     transport::{Channel, Endpoint},
 };
 
-impl Into<Decimal> for MoneyValue {
-    fn into(self) -> Decimal {
-        Decimal::from(self.units) + Decimal::from(self.nano) / dec!(1_000_000_000)
+impl From<Quotation> for Decimal {
+    fn from(value: Quotation) -> Self {
+        Decimal::from(value.units) + Decimal::from(value.nano) / dec!(1_000_000_000)
+    }
+}
+
+impl From<MoneyValue> for (String, Decimal) {
+    fn from(value: MoneyValue) -> Self {
+        (
+            value.currency,
+            Decimal::from(value.units) + Decimal::from(value.nano) / dec!(1_000_000_000)
+        )
     }
 }
 
@@ -42,8 +51,7 @@ mod decimal_tests {
 
     #[test]
     fn convert_zero() {
-        let value = super::api::MoneyValue {
-            currency: "USD".into(),
+        let value = super::api::Quotation {
             units: 0i64,
             nano: 0,
         };
@@ -53,8 +61,7 @@ mod decimal_tests {
 
     #[test]
     fn convert_negative() {
-        let value = super::api::MoneyValue {
-            currency: "USD".into(),
+        let value = super::api::Quotation {
             units: -5i64,
             nano: -990000000,
         };
@@ -63,19 +70,12 @@ mod decimal_tests {
     }
     #[test]
     fn convert_positive() {
-        let value = super::api::MoneyValue {
-            currency: "USD".into(),
+        let value = super::api::Quotation {
             units: 5i64,
             nano: 990000000,
         };
         let result: Decimal = value.into();
         assert_eq!(dec!(5.99), result);
-    }
-}
-
-impl Into<Decimal> for Quotation {
-    fn into(self) -> Decimal {
-        Decimal::from(self.units) + Decimal::from(self.nano) / dec!(1_000_000)
     }
 }
 
