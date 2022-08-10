@@ -458,8 +458,7 @@ impl From<api::Account> for Account {
 }
 
 fn grpc_timestamp_to_chrono_timestamp(t: prost_types::Timestamp) -> Option<DateTime<Utc>> {
-    let value = SystemTime::try_from(t).ok()?;
-    Some(system_time_to_date_time(value))
+    SystemTime::try_from(t).map(system_time_to_date_time).ok()
 }
 
 fn system_time_to_date_time(t: SystemTime) -> DateTime<Utc> {
