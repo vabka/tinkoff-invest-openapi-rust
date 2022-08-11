@@ -11,10 +11,10 @@ pub enum InstrumentRequest {
     Uid(String),
 }
 
-impl Into<api::InstrumentRequest> for InstrumentRequest {
-    fn into(self) -> api::InstrumentRequest {
+impl From<InstrumentRequest> for api::InstrumentRequest {
+    fn from(req: InstrumentRequest) -> api::InstrumentRequest {
         let mut request = api::InstrumentRequest::default();        
-        match self {
+        match req {
             InstrumentRequest::Figi(figi) =>  {
                 request.set_id_type(api::InstrumentIdType::Figi);
                 request.id = figi;
@@ -53,6 +53,5 @@ impl InstrumentsClient {
                 }
             }
         }
-        
     }
 }

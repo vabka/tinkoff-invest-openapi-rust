@@ -379,7 +379,7 @@ pub enum AccountType {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub enum AccessLevel {
+pub enum AccountAccessLevel {
     /// Уровень доступа не определён.
     Unspecified,
     /// Полный доступ к счёту.
@@ -391,14 +391,59 @@ pub enum AccessLevel {
 }
 
 #[derive(Debug, Clone)]
-pub struct Account {
-    id: String,
-    account_type: AccountType,
-    name: String,
-    status: AccountStatus,
-    opened_date: Option<Date<Utc>>,
-    closed_date: Option<Date<Utc>>,
-    access_level: AccessLevel,
+pub struct Account(api::Account);
+
+impl Account {
+    pub fn id(&self) -> &str {
+        &self.0.id
+    }
+
+    pub fn account_type(&self) -> AccountType {
+        match self.0.r#type {
+            1 => AccountType::Tinkoff,
+            2 => AccountType::TinkoffIis,
+            3 => AccountType::InvestBox,
+            _ => AccountType::Unspecified,
+        }
+    }
+
+    pub fn name(&self) -> &str {
+        &self.0.name
+    }
+
+    pub fn status(&self) -> AccountStatus {
+        match self.0.status() {
+            api::AccountStatus::Unspecified => AccountStatus::Unspecified,
+            api::AccountStatus::New => AccountStatus::New,
+            api::AccountStatus::Open => AccountStatus::Open,
+            api::AccountStatus::Closed => AccountStatus::Closed,
+        }
+    }
+
+    pub fn opened_date(&self) -> Option<Date<Utc>> {
+        self.0
+            .opened_date
+            .clone()
+            .and_then(grpc_timestamp_to_chrono_timestamp)
+            .map(|t| t.date())
+    }
+
+    pub fn closed_date(&self) -> Option<Date<Utc>> {
+        self.0
+            .closed_date
+            .clone()
+            .and_then(grpc_timestamp_to_chrono_timestamp)
+            .map(|t| t.date())
+    }
+
+    pub fn access_level(&self) -> AccountAccessLevel {
+        match self.0.access_level() {
+            api::AccessLevel::AccountAccessLevelUnspecified => AccountAccessLevel::Unspecified,
+            api::AccessLevel::AccountAccessLevelFullAccess => AccountAccessLevel::FullAccess,
+            api::AccessLevel::AccountAccessLevelReadOnly => AccountAccessLevel::ReadOnly,
+            api::AccessLevel::AccountAccessLevelNoAccess => AccountAccessLevel::NoAccess,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
@@ -411,41 +456,7 @@ pub enum AccountStatus {
 
 impl From<api::Account> for Account {
     fn from(account: api::Account) -> Self {
-        Self {
-            id: account.id,
-            account_type: match account.r#type {
-                1 => AccountType::Tinkoff,
-                2 => AccountType::TinkoffIis,
-                3 => AccountType::InvestBox,
-                _ => AccountType::Unspecified,
-            },
-            name: account.name,
-            status: match account.status {
-                1 => AccountStatus::New,
-                2 => AccountStatus::Open,
-                3 => AccountStatus::Closed,
-                _ => AccountStatus::Unspecified,
-            },
-            opened_date: account
-                .opened_date
-                .map(SystemTime::try_from)
-                .map(Result::unwrap)
-                .map(system_time_to_date_time)
-                .map(|dt| dt.date()),
-            closed_date: account
-                .closed_date
-                .map(SystemTime::try_from)
-                .map(Result::unwrap)
-                .map(system_time_to_date_time)
-                .map(|dt| dt.date()),
-
-            access_level: match account.access_level {
-                1 => AccessLevel::FullAccess,
-                2 => AccessLevel::ReadOnly,
-                3 => AccessLevel::NoAccess,
-                _ => AccessLevel::Unspecified,
-            },
-        }
+        Self(account)
     }
 }
 
