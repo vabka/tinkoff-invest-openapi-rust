@@ -20,7 +20,7 @@ service!(UsersClient, UsersServiceClient<Inner>, {
 
 impl UsersClient {
     /// Получить все счета пользователя
-    async fn get_accounts(&mut self) -> crate::Result<Vec<types::Account>> {
+    pub async fn get_accounts(&mut self) -> crate::Result<Vec<types::Account>> {
         let request = api::GetAccountsRequest {};
         let response = self.internal.get_accounts(request).await?;
         let data = response.into_inner();

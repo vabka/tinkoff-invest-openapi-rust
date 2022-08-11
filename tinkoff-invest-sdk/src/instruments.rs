@@ -1,8 +1,9 @@
-use tinkoff_invest_grpc::api::{self, InstrumentIdType};
+use tinkoff_invest_grpc::api::{self};
 use tinkoff_invest_grpc::Inner;
 use tinkoff_invest_grpc::api::instruments_service_client::InstrumentsServiceClient;
 
-use crate::{service, types::Bond, TinkoffInvestClient, error::{TinkoffInvestError, ErrorType}};
+use crate::{service, types::Bond};
+use crate::error::{TinkoffInvestError, ErrorType};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum InstrumentRequest {

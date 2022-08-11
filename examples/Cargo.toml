@@ -13,3 +13,7 @@ tinkoff-invest-sdk = { version = "*", path = "../tinkoff-invest-sdk" }
 [[example]]
 name = "instruments"
 path = "instruments.rs"
+
+[[example]]
+name = "users"
+path = "users.rs"
