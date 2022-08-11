@@ -2,6 +2,65 @@ use chrono::{Date, DateTime, TimeZone, Utc};
 use std::time::{SystemTime, UNIX_EPOCH};
 use tinkoff_invest_grpc::{api, decimal::rust_decimal::Decimal};
 
+#[derive(Debug, Clone)]
+pub struct UserTariff(api::GetUserTariffResponse);
+impl From<api::GetUserTariffResponse> for UserTariff {
+    fn from(response: api::GetUserTariffResponse) -> Self {
+        UserTariff(response)
+    }
+}
+#[derive(Debug, Clone)]
+pub struct UnaryLimit(api::UnaryLimit);
+impl From<api::UnaryLimit> for UnaryLimit {
+    fn from(inner: api::UnaryLimit) -> Self {
+        UnaryLimit(inner)
+    }
+}
+impl UnaryLimit {
+    /// Количество unary-запросов в минуту
+    pub fn limit_per_minute(&self) -> i32 {
+        self.0.limit_per_minute
+    }
+    /// Названия методов
+    pub fn methods(&self) -> &[String] {
+        &self.0.methods
+    }
+}
+#[derive(Debug, Clone)]
+pub struct StreamLimit(api::StreamLimit);
+impl From<api::StreamLimit> for StreamLimit {
+    fn from(inner: api::StreamLimit) -> Self {
+        StreamLimit(inner)
+    }
+}
+impl StreamLimit {
+    /// Максимальное количество stream-соединений
+    pub fn limit(&self) -> i32 {
+        self.0.limit
+    }
+
+    /// Названия stream-методов
+    pub fn streams(&self) -> &[String] {
+        self.0.streams.as_slice()
+    }
+}
+impl UserTariff {
+    pub fn unary_limits(&self) -> &[UnaryLimit] {
+        let borrowed = self.0.unary_limits.as_slice();
+        // Безопасно, так как UnaryLimit должен быть такого же размера и структуры, как и api::UnaryLimit
+        // borrow-checker ломаться не должен из-за этого
+        // note: было бы неплохо добавить сюда статическую проверк
+        unsafe { ::std::mem::transmute(borrowed) }
+    }
+
+    pub fn stream_limits(&self) -> &[StreamLimit] {
+        let borrowed = self.0.stream_limits.as_slice();
+        // Безопасно, так как StreamLimit должен быть такого же размера и структуры, как и api::StreamLimit
+        // borrow-checker ломаться не должен из-за этого
+        // note: было бы неплохо добавить сюда статическую проверк
+        unsafe { ::std::mem::transmute(borrowed) }
+    }
+}
 #[derive(Debug, Clone, Copy)]
 pub struct Short {
     /// Коэффициент ставки риска короткой позиции по инструменту.
@@ -392,7 +451,6 @@ pub enum AccountAccessLevel {
 
 #[derive(Debug, Clone)]
 pub struct Account(api::Account);
-
 impl Account {
     pub fn id(&self) -> &str {
         &self.0.id

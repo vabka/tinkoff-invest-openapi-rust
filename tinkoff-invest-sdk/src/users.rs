@@ -30,4 +30,11 @@ impl UsersClient {
             .map(types::Account::from)
             .collect())
     }
+
+    pub async fn get_user_tariff(&mut self) -> crate::Result<types::UserTariff> { 
+        let request = api::GetUserTariffRequest {};
+        let response = self.internal.get_user_tariff(request).await?;
+        let tariff = response.into_inner();
+        Ok(tariff.into())
+    }
 }

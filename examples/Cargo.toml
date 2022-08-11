@@ -11,9 +11,13 @@ tokio = { version = "1.20.1", features = ["full", "tracing"] }
 tinkoff-invest-sdk = { version = "*", path = "../tinkoff-invest-sdk" }
 
 [[example]]
-name = "instruments"
-path = "instruments.rs"
+name = "bond_by"
+path = "instruments/bond_by.rs"
 
 [[example]]
-name = "users"
-path = "users.rs"
+name = "get_accounts"
+path = "users/get_accounts.rs"
+
+[[example]]
+name = "get_user_tariff"
+path = "users/get_user_tariff.rs"
