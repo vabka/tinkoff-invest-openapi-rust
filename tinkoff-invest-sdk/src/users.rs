@@ -8,7 +8,6 @@ pub use tinkoff_invest_grpc::api::{
 use tinkoff_invest_grpc::*;
 
 service!(UsersClient, UsersServiceClient<Inner>, {
-    // method!(get_user_tariff, GetUserTariffRequest, GetUserTariffResponse);
     // method!(get_info, GetInfoRequest, GetInfoResponse);
     // method!(
     //     get_margin_attributes,
@@ -36,5 +35,12 @@ impl UsersClient {
         let response = self.internal.get_user_tariff(request).await?;
         let tariff = response.into_inner();
         Ok(tariff.into())
+    }
+
+    pub async fn get_info(&mut self) -> crate::Result<types::Info> {
+        let request = api::GetInfoRequest {};
+        let response = self.internal.get_info(request).await?;
+        let data = response.into_inner();
+        Ok(types::Info::from(data))
     }
 }

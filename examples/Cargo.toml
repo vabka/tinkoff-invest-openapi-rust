@@ -21,3 +21,7 @@ path = "users/get_accounts.rs"
 [[example]]
 name = "get_user_tariff"
 path = "users/get_user_tariff.rs"
+
+[[example]]
+name = "get_info"
+path = "users/get_info.rs"

@@ -3,6 +3,37 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use tinkoff_invest_grpc::{api, decimal::rust_decimal::Decimal};
 
 #[derive(Debug, Clone)]
+pub struct Info(api::GetInfoResponse);
+impl From<api::GetInfoResponse> for Info {
+    #[inline]
+    fn from(r: api::GetInfoResponse) -> Info {
+        Info(r)
+    }
+}
+
+impl Info {
+    
+    #[inline]
+    pub fn is_premium(&self) -> bool {
+        self.0.prem_status
+    }
+    
+    #[inline]
+    pub fn is_qualified(&self) -> bool {
+        self.0.qual_status
+    }
+    
+    #[inline]
+    pub fn qualified_for_work_with(&self) -> &[String] {
+        &self.0.qualified_for_work_with.as_slice()
+    }
+    
+    #[inline]
+    pub fn tariff(&self) -> &str {
+        &self.0.tariff
+    }
+}
+#[derive(Debug, Clone)]
 pub struct UserTariff(api::GetUserTariffResponse);
 impl From<api::GetUserTariffResponse> for UserTariff {
     fn from(response: api::GetUserTariffResponse) -> Self {
@@ -12,16 +43,19 @@ impl From<api::GetUserTariffResponse> for UserTariff {
 #[derive(Debug, Clone)]
 pub struct UnaryLimit(api::UnaryLimit);
 impl From<api::UnaryLimit> for UnaryLimit {
+    #[inline]
     fn from(inner: api::UnaryLimit) -> Self {
         UnaryLimit(inner)
     }
 }
 impl UnaryLimit {
     /// Количество unary-запросов в минуту
+    #[inline]
     pub fn limit_per_minute(&self) -> i32 {
         self.0.limit_per_minute
     }
     /// Названия методов
+    #[inline]
     pub fn methods(&self) -> &[String] {
         &self.0.methods
     }
@@ -29,22 +63,26 @@ impl UnaryLimit {
 #[derive(Debug, Clone)]
 pub struct StreamLimit(api::StreamLimit);
 impl From<api::StreamLimit> for StreamLimit {
+    #[inline]
     fn from(inner: api::StreamLimit) -> Self {
         StreamLimit(inner)
     }
 }
 impl StreamLimit {
     /// Максимальное количество stream-соединений
+    #[inline]
     pub fn limit(&self) -> i32 {
         self.0.limit
     }
 
     /// Названия stream-методов
+    #[inline]
     pub fn streams(&self) -> &[String] {
         self.0.streams.as_slice()
     }
 }
 impl UserTariff {
+    #[inline]
     pub fn unary_limits(&self) -> &[UnaryLimit] {
         let borrowed = self.0.unary_limits.as_slice();
         // Безопасно, так как UnaryLimit должен быть такого же размера и структуры, как и api::UnaryLimit
@@ -53,6 +91,7 @@ impl UserTariff {
         unsafe { ::std::mem::transmute(borrowed) }
     }
 
+    #[inline]
     pub fn stream_limits(&self) -> &[StreamLimit] {
         let borrowed = self.0.stream_limits.as_slice();
         // Безопасно, так как StreamLimit должен быть такого же размера и структуры, как и api::StreamLimit
