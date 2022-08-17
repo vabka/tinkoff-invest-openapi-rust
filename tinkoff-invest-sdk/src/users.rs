@@ -7,15 +7,7 @@ pub use tinkoff_invest_grpc::api::{
 };
 use tinkoff_invest_grpc::*;
 
-service!(UsersClient, UsersServiceClient<Inner>, {
-    // method!(get_info, GetInfoRequest, GetInfoResponse);
-    // method!(
-    //     get_margin_attributes,
-    //     GetMarginAttributesRequest,
-    //     GetMarginAttributesResponse,
-    //     thin
-    // );
-});
+service!(UsersClient, UsersServiceClient<Inner>);
 
 impl UsersClient {
     /// Получить все счета пользователя
@@ -30,7 +22,7 @@ impl UsersClient {
             .collect())
     }
 
-    pub async fn get_user_tariff(&mut self) -> crate::Result<types::UserTariff> { 
+    pub async fn get_user_tariff(&mut self) -> crate::Result<types::UserTariff> {
         let request = api::GetUserTariffRequest {};
         let response = self.internal.get_user_tariff(request).await?;
         let tariff = response.into_inner();
@@ -42,5 +34,17 @@ impl UsersClient {
         let response = self.internal.get_info(request).await?;
         let data = response.into_inner();
         Ok(types::Info::from(data))
+    }
+
+    pub async fn get_margin_attributes(
+        &mut self,
+        account_id: impl Into<String>,
+    ) -> crate::Result<types::MarginAttributes> {
+        let request = api::GetMarginAttributesRequest {
+            account_id: account_id.into(),
+        };
+        let response = self.internal.get_margin_attributes(request).await?;
+        let data = response.into_inner();
+        Ok(data.into())
     }
 }

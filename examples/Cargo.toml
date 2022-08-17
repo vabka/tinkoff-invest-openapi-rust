@@ -25,3 +25,7 @@ path = "users/get_user_tariff.rs"
 [[example]]
 name = "get_info"
 path = "users/get_info.rs"
+
+[[example]]
+name = "get_margin_attributes"
+path = "users/get_margin_attributes.rs"

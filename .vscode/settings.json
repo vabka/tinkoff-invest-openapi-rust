@@ -7,8 +7,11 @@
         "isin",
         "marketdata",
         "Moex",
+        "nanos",
+        "nsec",
         "proto",
         "stoporders",
+        "subsec",
         "tinkoff"
     ],
     "rpc.enabled": true

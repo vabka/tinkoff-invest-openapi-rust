@@ -3,6 +3,44 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use tinkoff_invest_grpc::{api, decimal::rust_decimal::Decimal};
 
 #[derive(Debug, Clone)]
+pub struct MarginAttributes(api::GetMarginAttributesResponse);
+impl From<api::GetMarginAttributesResponse> for MarginAttributes {
+    fn from(r: api::GetMarginAttributesResponse) -> MarginAttributes {
+        MarginAttributes(r)
+    }
+}
+impl MarginAttributes {
+    /// Ликвидная стоимость портфеля.
+    #[inline]
+    pub fn liquid_portfolio(&self) -> Option<MoneyValue> {
+        self.0.liquid_portfolio.clone().map(MoneyValue::from)
+    }
+
+    /// Начальная маржа — начальное обеспечение для совершения новой сделки.
+    #[inline]
+    pub fn starting_margin(&self) -> Option<MoneyValue> {
+        self.0.starting_margin.clone().map(MoneyValue::from)
+    }
+
+    /// Минимальная маржа — это минимальное обеспечение для поддержания позиции, которую вы уже открыли.
+    #[inline]
+    pub fn minimal_margin(&self) -> Option<MoneyValue> {
+        self.0.minimal_margin.clone().map(MoneyValue::from)
+    }
+    
+    /// Уровень достаточности средств. Соотношение стоимости ликвидного портфеля к начальной марже.
+    #[inline]
+    pub fn funds_sufficiency_level(&self) -> Option<Decimal> {
+        self.0.funds_sufficiency_level.clone().map(Decimal::from)
+    }
+
+    /// Объем недостающих средств. Разница между стартовой маржой и ликвидной стоимости портфеля.
+    #[inline]
+    pub fn amount_of_missing_funds(&self) -> Option<MoneyValue> {
+        self.0.amount_of_missing_funds.clone().map(MoneyValue::from)
+    }
+}
+#[derive(Debug, Clone)]
 pub struct Info(api::GetInfoResponse);
 impl From<api::GetInfoResponse> for Info {
     #[inline]
@@ -12,22 +50,21 @@ impl From<api::GetInfoResponse> for Info {
 }
 
 impl Info {
-    
     #[inline]
     pub fn is_premium(&self) -> bool {
         self.0.prem_status
     }
-    
+
     #[inline]
     pub fn is_qualified(&self) -> bool {
         self.0.qual_status
     }
-    
+
     #[inline]
     pub fn qualified_for_work_with(&self) -> &[String] {
         &self.0.qualified_for_work_with.as_slice()
     }
-    
+
     #[inline]
     pub fn tariff(&self) -> &str {
         &self.0.tariff
@@ -137,8 +174,8 @@ pub struct CountryOfRisk {
     code: String,
     name: String,
 }
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-#[repr(i32)]
 pub enum SecurityTradingStatus {
     /// Торговый статус не определён
     Unspecified,

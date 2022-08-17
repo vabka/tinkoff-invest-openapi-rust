@@ -55,4 +55,12 @@ impl InstrumentsClient {
             }
         }
     }
+
+    pub async fn trading_schedules(&mut self) -> crate::Result<String> {
+        let req = todo!();
+        let res = self.internal.trading_schedules(req).await?;
+        let data = res.into_inner();
+
+        todo!()
+    }
 }
