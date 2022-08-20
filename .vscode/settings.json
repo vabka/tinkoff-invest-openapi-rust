@@ -9,6 +9,8 @@
         "Moex",
         "nanos",
         "nsec",
+        "premarket",
+        "prost",
         "proto",
         "stoporders",
         "subsec",

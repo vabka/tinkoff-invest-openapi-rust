@@ -4,8 +4,6 @@ version = "0.0.0"
 publish = false
 edition = "2021"
 
-# If you copy one of the examples into a new project, you should be using
-# [dependencies] instead, and delete the **path**.
 [dev-dependencies]
 tokio = { version = "1.20.1", features = ["full", "tracing"] }
 tinkoff-invest-sdk = { version = "*", path = "../tinkoff-invest-sdk" }
@@ -13,6 +11,10 @@ tinkoff-invest-sdk = { version = "*", path = "../tinkoff-invest-sdk" }
 [[example]]
 name = "bond_by"
 path = "instruments/bond_by.rs"
+
+[[example]]
+name = "trading_chedules"
+path = "instruments/trading_schedules.rs"
 
 [[example]]
 name = "get_accounts"

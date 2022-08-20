@@ -1,0 +1,268 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'tinkoff-invest-grpc'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=tinkoff-invest-grpc"
+                ],
+                "filter": {
+                    "name": "tinkoff-invest-grpc",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'tinkoff-invest-sdk'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=tinkoff-invest-sdk"
+                ],
+                "filter": {
+                    "name": "tinkoff-invest-sdk",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'bond_by'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=bond_by",
+                    "--package=examples"
+                ],
+                "filter": {
+                    "name": "bond_by",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in example 'bond_by'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--example=bond_by",
+                    "--package=examples"
+                ],
+                "filter": {
+                    "name": "bond_by",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'trading_chedules'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=trading_chedules",
+                    "--package=examples"
+                ],
+                "filter": {
+                    "name": "trading_chedules",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in example 'trading_chedules'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--example=trading_chedules",
+                    "--package=examples"
+                ],
+                "filter": {
+                    "name": "trading_chedules",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'get_accounts'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=get_accounts",
+                    "--package=examples"
+                ],
+                "filter": {
+                    "name": "get_accounts",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in example 'get_accounts'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--example=get_accounts",
+                    "--package=examples"
+                ],
+                "filter": {
+                    "name": "get_accounts",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'get_user_tariff'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=get_user_tariff",
+                    "--package=examples"
+                ],
+                "filter": {
+                    "name": "get_user_tariff",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in example 'get_user_tariff'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--example=get_user_tariff",
+                    "--package=examples"
+                ],
+                "filter": {
+                    "name": "get_user_tariff",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'get_info'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=get_info",
+                    "--package=examples"
+                ],
+                "filter": {
+                    "name": "get_info",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in example 'get_info'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--example=get_info",
+                    "--package=examples"
+                ],
+                "filter": {
+                    "name": "get_info",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'get_margin_attributes'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=get_margin_attributes",
+                    "--package=examples"
+                ],
+                "filter": {
+                    "name": "get_margin_attributes",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in example 'get_margin_attributes'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--example=get_margin_attributes",
+                    "--package=examples"
+                ],
+                "filter": {
+                    "name": "get_margin_attributes",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}

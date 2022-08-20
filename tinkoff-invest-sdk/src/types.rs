@@ -1,7 +1,120 @@
+use std::ops::RangeInclusive;
+
 use chrono::{Date, DateTime, TimeZone, Utc};
-use std::time::{SystemTime, UNIX_EPOCH};
 use tinkoff_invest_grpc::{api, decimal::rust_decimal::Decimal};
 
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct DateRange<Tz: TimeZone> {
+    start: DateTime<Tz>,
+    end: DateTime<Tz>,
+}
+
+impl<Tz: TimeZone> DateRange<Tz> {
+    #[inline]
+    pub fn new(start: DateTime<Tz>, end: DateTime<Tz>) -> Self {
+        Self {
+            start: start,
+            end: end,
+        }
+    }
+
+    #[inline]
+    pub fn starts(&self) -> &DateTime<Tz> {
+        &self.start
+    }
+
+    #[inline]
+    pub fn ends(&self) -> &DateTime<Tz> {
+        &self.end
+    }
+
+    #[inline]
+    pub fn deconstruct(self) -> (DateTime<Tz>, DateTime<Tz>) {
+        (self.start, self.end)
+    }
+}
+
+pub struct TradingSchedulesFilter {}
+
+#[derive(Debug, Clone)]
+pub struct TradingSchedule(api::TradingSchedule);
+impl From<api::TradingSchedule> for TradingSchedule {
+    fn from(value: api::TradingSchedule) -> Self {
+        Self(value)
+    }
+}
+
+pub struct TradingDay(api::TradingDay);
+impl From<api::TradingDay> for TradingDay {
+    fn from(value: api::TradingDay) -> Self {
+        Self(value)
+    }
+}
+impl TradingDay {
+    pub fn date(&self) -> Date<Utc> {
+        let date = self.0.date.as_ref().unwrap();
+        grpc_timestamp_to_chrono_timestamp(date).date()
+    }
+
+    pub fn is_trading_day(&self) -> bool {
+        self.0.is_trading_day
+    }
+
+    pub fn trading_time(&self) -> Option<RangeInclusive<DateTime<Utc>>> {
+        let start = self.0.start_time.as_ref()?;
+        let end = self.0.end_time.as_ref()?;
+        let start = grpc_timestamp_to_chrono_timestamp(start);
+        let end = grpc_timestamp_to_chrono_timestamp(end);
+        Some(start..=end)
+    }
+
+    pub fn opening_auction_start_time(&self) -> Option<DateTime<Utc>> {
+        self.0
+            .opening_auction_start_time
+            .as_ref()
+            .map(grpc_timestamp_to_chrono_timestamp)
+    }
+
+    pub fn closing_auction_end_time(&self) -> Option<DateTime<Utc>> {
+        self.0
+            .closing_auction_end_time
+            .as_ref()
+            .map(grpc_timestamp_to_chrono_timestamp)
+    }
+
+    pub fn evening_opening_auction_start_time(&self) -> Option<DateTime<Utc>> {
+        self.0
+            .evening_opening_auction_start_time
+            .as_ref()
+            .map(grpc_timestamp_to_chrono_timestamp)
+    }
+
+    pub fn evening_trading_time(&self) -> Option<RangeInclusive<DateTime<Utc>>> {
+        let start = grpc_timestamp_to_chrono_timestamp(self.0.evening_start_time.as_ref()?);
+        let end = grpc_timestamp_to_chrono_timestamp(self.0.evening_end_time.as_ref()?);
+        Some(start..=end)
+    }
+
+    pub fn clearing_time(&self) -> Option<RangeInclusive<DateTime<Utc>>> {
+        let start = grpc_timestamp_to_chrono_timestamp(self.0.clearing_start_time.as_ref()?);
+        let end = grpc_timestamp_to_chrono_timestamp(self.0.clearing_end_time.as_ref()?);
+        Some(start..=end)
+    }
+
+    pub fn premarket_time(&self) -> Option<RangeInclusive<DateTime<Utc>>> {
+        let start = grpc_timestamp_to_chrono_timestamp(self.0.premarket_start_time.as_ref()?);
+        let end = grpc_timestamp_to_chrono_timestamp(self.0.premarket_end_time.as_ref()?);
+        Some(start..=end)
+    }
+}
+impl TradingSchedule {
+    pub fn exchanges(&self) -> &str {
+        &self.0.exchange
+    }
+    pub fn days(&self) -> &[TradingDay] {
+        unsafe { std::mem::transmute(self.0.days.as_slice()) }
+    }
+}
 #[derive(Debug, Clone)]
 pub struct MarginAttributes(api::GetMarginAttributesResponse);
 impl From<api::GetMarginAttributesResponse> for MarginAttributes {
@@ -27,7 +140,7 @@ impl MarginAttributes {
     pub fn minimal_margin(&self) -> Option<MoneyValue> {
         self.0.minimal_margin.clone().map(MoneyValue::from)
     }
-    
+
     /// Уровень достаточности средств. Соотношение стоимости ликвидного портфеля к начальной марже.
     #[inline]
     pub fn funds_sufficiency_level(&self) -> Option<Decimal> {
@@ -342,11 +455,10 @@ impl Bond {
 
     #[inline]
     pub fn maturity_date(&self) -> Option<Date<Utc>> {
-        // TODO extra allocation
         self.0
             .maturity_date
-            .clone()
-            .and_then(grpc_timestamp_to_chrono_timestamp)
+            .as_ref()
+            .map(grpc_timestamp_to_chrono_timestamp)
             .map(|d| d.date())
     }
 
@@ -358,33 +470,29 @@ impl Bond {
 
     #[inline]
     pub fn state_reg_date(&self) -> Option<Date<Utc>> {
-        // TODO extra allocation
         self.0
             .state_reg_date
-            .clone()
-            .and_then(grpc_timestamp_to_chrono_timestamp)
+            .as_ref()
+            .map(grpc_timestamp_to_chrono_timestamp)
             .map(|d| d.date())
     }
 
     #[inline]
     pub fn placement_date(&self) -> Option<Date<Utc>> {
-        // TODO extra allocation
         self.0
             .placement_date
-            .clone()
-            .and_then(grpc_timestamp_to_chrono_timestamp)
+            .as_ref()
+            .map(grpc_timestamp_to_chrono_timestamp)
             .map(|d| d.date())
     }
 
     #[inline]
     pub fn placement_price(&self) -> Option<MoneyValue> {
-        // TODO extra allocation
         self.0.placement_price.clone().map(Into::into)
     }
 
     #[inline]
     pub fn aci_value(&self) -> Option<MoneyValue> {
-        // TODO extra allocation
         self.0.aci_value.clone().map(Into::into)
     }
 
@@ -491,8 +599,8 @@ impl Bond {
         // TODO allocation
         self.0
             .first_1day_candle_date
-            .clone()
-            .and_then(grpc_timestamp_to_chrono_timestamp)
+            .as_ref()
+            .map(grpc_timestamp_to_chrono_timestamp)
     }
 
     #[inline]
@@ -500,8 +608,8 @@ impl Bond {
         // TODO allocation
         self.0
             .first_1day_candle_date
-            .clone()
-            .and_then(grpc_timestamp_to_chrono_timestamp)
+            .as_ref()
+            .map(grpc_timestamp_to_chrono_timestamp)
     }
 }
 
@@ -557,16 +665,16 @@ impl Account {
     pub fn opened_date(&self) -> Option<Date<Utc>> {
         self.0
             .opened_date
-            .clone()
-            .and_then(grpc_timestamp_to_chrono_timestamp)
+            .as_ref()
+            .map(grpc_timestamp_to_chrono_timestamp)
             .map(|t| t.date())
     }
 
     pub fn closed_date(&self) -> Option<Date<Utc>> {
         self.0
             .closed_date
-            .clone()
-            .and_then(grpc_timestamp_to_chrono_timestamp)
+            .as_ref()
+            .map(grpc_timestamp_to_chrono_timestamp)
             .map(|t| t.date())
     }
 
@@ -594,23 +702,12 @@ impl From<api::Account> for Account {
     }
 }
 
-fn grpc_timestamp_to_chrono_timestamp(t: prost_types::Timestamp) -> Option<DateTime<Utc>> {
-    SystemTime::try_from(t).map(system_time_to_date_time).ok()
+fn grpc_timestamp_to_chrono_timestamp(t: &prost_types::Timestamp) -> DateTime<Utc> {
+    Utc.timestamp(t.seconds, t.nanos as u32)
 }
 
-fn system_time_to_date_time(t: SystemTime) -> DateTime<Utc> {
-    let (sec, nsec) = match t.duration_since(UNIX_EPOCH) {
-        Ok(dur) => (dur.as_secs() as i64, dur.subsec_nanos()),
-        Err(e) => {
-            // unlikely but should be handled
-            let dur = e.duration();
-            let (sec, nsec) = (dur.as_secs() as i64, dur.subsec_nanos());
-            if nsec == 0 {
-                (-sec, 0)
-            } else {
-                (-sec - 1, 1_000_000_000 - nsec)
-            }
-        }
-    };
-    Utc.timestamp(sec, nsec)
+pub(crate) fn chrono_timestamp_to_grpc_timestamp(t: DateTime<Utc>) -> prost_types::Timestamp {
+    let seconds = t.timestamp();
+    let nanos = t.timestamp_subsec_nanos() as i32;
+    prost_types::Timestamp { seconds, nanos }
 }

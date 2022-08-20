@@ -8,7 +8,7 @@ pub use generated::errors as error;
 
 use error::TinkoffInvestError;
 use instruments::InstrumentsClient;
-
+pub use chrono;
 pub struct TinkoffInvestClient {
     internal: tinkoff_invest_grpc::TinkoffInvestClient,
 }
