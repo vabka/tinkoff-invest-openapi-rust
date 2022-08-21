@@ -15,7 +15,7 @@ async fn main() {
         .await
         .unwrap();
     for schedule in schedules {
-        println!("{}", schedule.exchanges());
+        println!("{}", schedule.exchange());
         for day in schedule.days().iter().filter(|day| day.is_trading_day()) {
             println!(
                 "{}\t{:?}\t{:?}\t{:?}",

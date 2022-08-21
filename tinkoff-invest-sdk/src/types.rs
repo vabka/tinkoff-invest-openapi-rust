@@ -108,7 +108,7 @@ impl TradingDay {
     }
 }
 impl TradingSchedule {
-    pub fn exchanges(&self) -> &str {
+    pub fn exchange(&self) -> &str {
         &self.0.exchange
     }
     pub fn days(&self) -> &[TradingDay] {
