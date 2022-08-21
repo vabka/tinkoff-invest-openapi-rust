@@ -237,7 +237,8 @@ impl UserTariff {
         let borrowed = self.0.unary_limits.as_slice();
         // Безопасно, так как UnaryLimit должен быть такого же размера и структуры, как и api::UnaryLimit
         // borrow-checker ломаться не должен из-за этого
-        // note: было бы неплохо добавить сюда статическую проверк
+        // note: было бы неплохо добавить сюда статическую проверку
+        // note: Возможно, можно как-то это сделать без unsafe
         unsafe { ::std::mem::transmute(borrowed) }
     }
 
@@ -246,7 +247,8 @@ impl UserTariff {
         let borrowed = self.0.stream_limits.as_slice();
         // Безопасно, так как StreamLimit должен быть такого же размера и структуры, как и api::StreamLimit
         // borrow-checker ломаться не должен из-за этого
-        // note: было бы неплохо добавить сюда статическую проверк
+        // note: было бы неплохо добавить сюда статическую проверку
+        // note: Возможно, можно как-то это сделать без unsafe
         unsafe { ::std::mem::transmute(borrowed) }
     }
 }
