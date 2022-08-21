@@ -9,6 +9,7 @@ pub use generated::errors as error;
 use error::TinkoffInvestError;
 use instruments::InstrumentsClient;
 pub use chrono;
+pub use tinkoff_invest_grpc::decimal;
 pub struct TinkoffInvestClient {
     internal: tinkoff_invest_grpc::TinkoffInvestClient,
 }

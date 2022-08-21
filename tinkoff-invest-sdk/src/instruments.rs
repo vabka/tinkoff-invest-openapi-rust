@@ -1,6 +1,6 @@
 use std::ops::RangeInclusive;
 
-use chrono::{Date, DateTime, Utc};
+use chrono::{Date, Utc};
 use tinkoff_invest_grpc::api::instruments_service_client::InstrumentsServiceClient;
 use tinkoff_invest_grpc::api::{self};
 use tinkoff_invest_grpc::Inner;
@@ -8,7 +8,7 @@ use tinkoff_invest_grpc::Inner;
 use crate::error::{ErrorType, TinkoffInvestError};
 use crate::{
     service,
-    types::{self, DateRange},
+    types::{self},
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]

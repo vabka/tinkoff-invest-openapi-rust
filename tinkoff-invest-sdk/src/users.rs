@@ -29,11 +29,11 @@ impl UsersClient {
         Ok(tariff.into())
     }
 
-    pub async fn get_info(&mut self) -> crate::Result<types::Info> {
+    pub async fn get_info(&mut self) -> crate::Result<types::UserInfo> {
         let request = api::GetInfoRequest {};
         let response = self.internal.get_info(request).await?;
         let data = response.into_inner();
-        Ok(types::Info::from(data))
+        Ok(types::UserInfo::from(data))
     }
 
     pub async fn get_margin_attributes(

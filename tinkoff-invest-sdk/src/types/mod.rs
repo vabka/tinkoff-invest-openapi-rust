@@ -1,276 +1,18 @@
-use std::ops::RangeInclusive;
-
 use chrono::{Date, DateTime, TimeZone, Utc};
 use tinkoff_invest_grpc::{api, decimal::rust_decimal::Decimal};
 
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub struct DateRange<Tz: TimeZone> {
-    start: DateTime<Tz>,
-    end: DateTime<Tz>,
-}
+mod trading_schedule;
+pub use trading_schedule::TradingSchedule;
+pub use trading_schedule::TradingDay;
 
-impl<Tz: TimeZone> DateRange<Tz> {
-    #[inline]
-    pub fn new(start: DateTime<Tz>, end: DateTime<Tz>) -> Self {
-        Self {
-            start: start,
-            end: end,
-        }
-    }
+mod margin_attributes;
+pub use margin_attributes::MarginAttributes;
 
-    #[inline]
-    pub fn starts(&self) -> &DateTime<Tz> {
-        &self.start
-    }
-
-    #[inline]
-    pub fn ends(&self) -> &DateTime<Tz> {
-        &self.end
-    }
-
-    #[inline]
-    pub fn deconstruct(self) -> (DateTime<Tz>, DateTime<Tz>) {
-        (self.start, self.end)
-    }
-}
-
-pub struct TradingSchedulesFilter {}
-
-#[derive(Debug, Clone)]
-pub struct TradingSchedule(api::TradingSchedule);
-impl From<api::TradingSchedule> for TradingSchedule {
-    fn from(value: api::TradingSchedule) -> Self {
-        Self(value)
-    }
-}
-
-pub struct TradingDay(api::TradingDay);
-impl From<api::TradingDay> for TradingDay {
-    fn from(value: api::TradingDay) -> Self {
-        Self(value)
-    }
-}
-impl TradingDay {
-    pub fn date(&self) -> Date<Utc> {
-        let date = self.0.date.as_ref().unwrap();
-        grpc_timestamp_to_chrono_timestamp(date).date()
-    }
-
-    pub fn is_trading_day(&self) -> bool {
-        self.0.is_trading_day
-    }
-
-    pub fn trading_time(&self) -> Option<RangeInclusive<DateTime<Utc>>> {
-        let start = self.0.start_time.as_ref()?;
-        let end = self.0.end_time.as_ref()?;
-        let start = grpc_timestamp_to_chrono_timestamp(start);
-        let end = grpc_timestamp_to_chrono_timestamp(end);
-        Some(start..=end)
-    }
-
-    pub fn opening_auction_start_time(&self) -> Option<DateTime<Utc>> {
-        self.0
-            .opening_auction_start_time
-            .as_ref()
-            .map(grpc_timestamp_to_chrono_timestamp)
-    }
-
-    pub fn closing_auction_end_time(&self) -> Option<DateTime<Utc>> {
-        self.0
-            .closing_auction_end_time
-            .as_ref()
-            .map(grpc_timestamp_to_chrono_timestamp)
-    }
-
-    pub fn evening_opening_auction_start_time(&self) -> Option<DateTime<Utc>> {
-        self.0
-            .evening_opening_auction_start_time
-            .as_ref()
-            .map(grpc_timestamp_to_chrono_timestamp)
-    }
-
-    pub fn evening_trading_time(&self) -> Option<RangeInclusive<DateTime<Utc>>> {
-        let start = grpc_timestamp_to_chrono_timestamp(self.0.evening_start_time.as_ref()?);
-        let end = grpc_timestamp_to_chrono_timestamp(self.0.evening_end_time.as_ref()?);
-        Some(start..=end)
-    }
-
-    pub fn clearing_time(&self) -> Option<RangeInclusive<DateTime<Utc>>> {
-        let start = grpc_timestamp_to_chrono_timestamp(self.0.clearing_start_time.as_ref()?);
-        let end = grpc_timestamp_to_chrono_timestamp(self.0.clearing_end_time.as_ref()?);
-        Some(start..=end)
-    }
-
-    pub fn premarket_time(&self) -> Option<RangeInclusive<DateTime<Utc>>> {
-        let start = grpc_timestamp_to_chrono_timestamp(self.0.premarket_start_time.as_ref()?);
-        let end = grpc_timestamp_to_chrono_timestamp(self.0.premarket_end_time.as_ref()?);
-        Some(start..=end)
-    }
-}
-impl TradingSchedule {
-    pub fn exchange(&self) -> &str {
-        &self.0.exchange
-    }
-    pub fn days(&self) -> &[TradingDay] {
-        unsafe { std::mem::transmute(self.0.days.as_slice()) }
-    }
-}
-#[derive(Debug, Clone)]
-pub struct MarginAttributes(api::GetMarginAttributesResponse);
-impl From<api::GetMarginAttributesResponse> for MarginAttributes {
-    fn from(r: api::GetMarginAttributesResponse) -> MarginAttributes {
-        MarginAttributes(r)
-    }
-}
-impl MarginAttributes {
-    /// Ликвидная стоимость портфеля.
-    #[inline]
-    pub fn liquid_portfolio(&self) -> Option<MoneyValue> {
-        self.0.liquid_portfolio.clone().map(MoneyValue::from)
-    }
-
-    /// Начальная маржа — начальное обеспечение для совершения новой сделки.
-    #[inline]
-    pub fn starting_margin(&self) -> Option<MoneyValue> {
-        self.0.starting_margin.clone().map(MoneyValue::from)
-    }
-
-    /// Минимальная маржа — это минимальное обеспечение для поддержания позиции, которую вы уже открыли.
-    #[inline]
-    pub fn minimal_margin(&self) -> Option<MoneyValue> {
-        self.0.minimal_margin.clone().map(MoneyValue::from)
-    }
-
-    /// Уровень достаточности средств. Соотношение стоимости ликвидного портфеля к начальной марже.
-    #[inline]
-    pub fn funds_sufficiency_level(&self) -> Option<Decimal> {
-        self.0.funds_sufficiency_level.clone().map(Decimal::from)
-    }
-
-    /// Объем недостающих средств. Разница между стартовой маржой и ликвидной стоимости портфеля.
-    #[inline]
-    pub fn amount_of_missing_funds(&self) -> Option<MoneyValue> {
-        self.0.amount_of_missing_funds.clone().map(MoneyValue::from)
-    }
-}
-#[derive(Debug, Clone)]
-pub struct Info(api::GetInfoResponse);
-impl From<api::GetInfoResponse> for Info {
-    #[inline]
-    fn from(r: api::GetInfoResponse) -> Info {
-        Info(r)
-    }
-}
-
-impl Info {
-    #[inline]
-    pub fn is_premium(&self) -> bool {
-        self.0.prem_status
-    }
-
-    #[inline]
-    pub fn is_qualified(&self) -> bool {
-        self.0.qual_status
-    }
-
-    #[inline]
-    pub fn qualified_for_work_with(&self) -> &[String] {
-        &self.0.qualified_for_work_with.as_slice()
-    }
-
-    #[inline]
-    pub fn tariff(&self) -> &str {
-        &self.0.tariff
-    }
-}
-#[derive(Debug, Clone)]
-pub struct UserTariff(api::GetUserTariffResponse);
-impl From<api::GetUserTariffResponse> for UserTariff {
-    fn from(response: api::GetUserTariffResponse) -> Self {
-        UserTariff(response)
-    }
-}
-#[derive(Debug, Clone)]
-pub struct UnaryLimit(api::UnaryLimit);
-impl From<api::UnaryLimit> for UnaryLimit {
-    #[inline]
-    fn from(inner: api::UnaryLimit) -> Self {
-        UnaryLimit(inner)
-    }
-}
-impl UnaryLimit {
-    /// Количество unary-запросов в минуту
-    #[inline]
-    pub fn limit_per_minute(&self) -> i32 {
-        self.0.limit_per_minute
-    }
-    /// Названия методов
-    #[inline]
-    pub fn methods(&self) -> &[String] {
-        &self.0.methods
-    }
-}
-#[derive(Debug, Clone)]
-pub struct StreamLimit(api::StreamLimit);
-impl From<api::StreamLimit> for StreamLimit {
-    #[inline]
-    fn from(inner: api::StreamLimit) -> Self {
-        StreamLimit(inner)
-    }
-}
-impl StreamLimit {
-    /// Максимальное количество stream-соединений
-    #[inline]
-    pub fn limit(&self) -> i32 {
-        self.0.limit
-    }
-
-    /// Названия stream-методов
-    #[inline]
-    pub fn streams(&self) -> &[String] {
-        self.0.streams.as_slice()
-    }
-}
-impl UserTariff {
-    #[inline]
-    pub fn unary_limits(&self) -> &[UnaryLimit] {
-        let borrowed = self.0.unary_limits.as_slice();
-        // Безопасно, так как UnaryLimit должен быть такого же размера и структуры, как и api::UnaryLimit
-        // borrow-checker ломаться не должен из-за этого
-        // note: было бы неплохо добавить сюда статическую проверку
-        // note: Возможно, можно как-то это сделать без unsafe
-        unsafe { ::std::mem::transmute(borrowed) }
-    }
-
-    #[inline]
-    pub fn stream_limits(&self) -> &[StreamLimit] {
-        let borrowed = self.0.stream_limits.as_slice();
-        // Безопасно, так как StreamLimit должен быть такого же размера и структуры, как и api::StreamLimit
-        // borrow-checker ломаться не должен из-за этого
-        // note: было бы неплохо добавить сюда статическую проверку
-        // note: Возможно, можно как-то это сделать без unsafe
-        unsafe { ::std::mem::transmute(borrowed) }
-    }
-}
-#[derive(Debug, Clone, Copy)]
-pub struct Short {
-    /// Коэффициент ставки риска короткой позиции по инструменту.
-    kshort: Decimal,
-    /// Ставка риска минимальной маржи в шорт.
-    dshort: Decimal,
-    /// Ставка риска начальной маржи в шорт.
-    dshort_min: Decimal,
-}
-
-#[derive(Debug, Clone, Copy)]
-pub struct Long {
-    /// Коэффициент ставки риска длинной позиции по инструменту.
-    klong: Decimal,
-    /// Ставка риска минимальной маржи в лонг.
-    dlong: Decimal,
-    /// Ставка риска начальной маржи в лонг.
-    dlong_min: Decimal,
-}
+mod user_info;
+pub use user_info::UserInfo;
+pub use user_info::StreamLimit;
+pub use user_info::UnaryLimit;
+pub use user_info::UserTariff;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct MoneyValue {
@@ -371,6 +113,25 @@ pub enum RealExchange {
     Otc,
 }
 
+#[derive(Debug, Clone, Copy)]
+pub struct Short {
+    /// Коэффициент ставки риска короткой позиции по инструменту.
+    kshort: Decimal,
+    /// Ставка риска минимальной маржи в шорт.
+    dshort: Decimal,
+    /// Ставка риска начальной маржи в шорт.
+    dshort_min: Decimal,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct Long {
+    /// Коэффициент ставки риска длинной позиции по инструменту.
+    klong: Decimal,
+    /// Ставка риска минимальной маржи в лонг.
+    dlong: Decimal,
+    /// Ставка риска начальной маржи в лонг.
+    dlong_min: Decimal,
+}
 impl From<api::RealExchange> for RealExchange {
     fn from(value: api::RealExchange) -> Self {
         match value {
